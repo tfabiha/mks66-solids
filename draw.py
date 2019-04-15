@@ -1,10 +1,101 @@
 from display import *
 from matrix import *
 from gmath import *
+import random
 
 def scanline_convert(polygons, i, screen, zbuffer ):
-    pass
+    i0 = polygons[i]
+    i1 = polygons[i+1]
+    i2 = polygons[i+2]
 
+    color = [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)]
+    
+    # order the corners by their y's 
+    if i0[1] >= i1[1] and i0[1] >= i2[1]:
+        top = i0
+        if i1[1] >= i2[1]:
+            middle = i1
+            bottom = i2
+        else:
+            middle = i2
+            bottom = i1
+    elif i1[1] >= i0[1] and i1[1] >= i2[1]: 
+        top = i1
+        if i0[1] >= i2[1]:
+            middle = i0
+            bottom = i2
+        else:
+            middle = i2
+            bottom = i0
+    else:
+        top = i2
+        if i1[1] >= i0[1]:
+            middle = i1
+            bottom = i0
+        else:
+            middle = i0
+            bottom = i1
+
+    # first triangle: top-half
+    # if the top and middle have the same y then we don't do a top-half trangle
+
+    if top[1] != middle[1] and top[1] != bottom[1]:
+        dx_tomid = ( top[0] - middle[0] ) / ( top[1] - middle[1] )
+        dx_tobott = ( top[0] - bottom[0] ) / ( top[1] - bottom[1] )
+
+        dz_tomid = ( top[2] - middle[2] ) / ( top[1] - middle[1] )
+        dz_tobott = ( top[2] - bottom[2] ) / ( top[1] - bottom[1] )
+        
+        dy = -1
+
+        x_tomid = top[0]
+        x_tobott = top[0]
+
+        z_tomid = top[2]
+        z_tobott = top[2]
+        
+        y = top[1]
+        while y >= middle[1]:
+            draw_line(int(x_tomid), int(y), int(z_tomid), int(x_tobott), int(y), int(z_tobott), screen, zbuffer, color)
+
+            x_tomid -= dx_tomid
+            x_tobott -= dx_tobott
+
+            z_tomid -= dz_tomid
+            z_tobott -= dz_tobott
+
+            y += dy
+
+    if bottom[1] != middle[1] and top[1] != bottom[1]:
+        #print("top:{}\nmiddle:{}\nbottom:{}\n\n".format(top, middle, bottom))
+        
+        dx_tomid = ( bottom[0] - middle[0] ) / ( bottom[1] - middle[1] )
+        dx_totop = ( top[0] - bottom[0] ) / ( top[1] - bottom[1] )
+
+        dz_tomid = ( bottom[2] - middle[2] ) / ( bottom[1] - middle[1] )
+        dz_totop = ( top[2] - bottom[2] ) / ( top[1] - bottom[1] )
+
+        dy = 1
+
+        x_tomid = bottom[0]
+        x_totop = bottom[0]
+        
+        z_tomid = bottom[2]
+        z_totop = bottom[2]
+        
+        y = bottom[1]
+        while y <= middle[1]:
+            draw_line(int(x_tomid), int(y), int(z_tomid), int(x_totop), int(y), int(z_totop), screen, zbuffer, color)
+            #print("drew line")
+
+            x_tomid += dx_tomid
+            x_totop += dx_totop
+            
+            z_tomid += dz_tomid
+            z_totop += dz_totop
+
+            y += dy
+    
 def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
     add_point(polygons, x0, y0, z0)
     add_point(polygons, x1, y1, z1)
@@ -13,7 +104,7 @@ def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
 def draw_polygons( polygons, screen, zbuffer, color ):
     if len(polygons) < 2:
         print 'Need at least 3 points to draw'
-        return
+        return 
 
     point = 0
     while point < len(polygons) - 2:
@@ -21,6 +112,10 @@ def draw_polygons( polygons, screen, zbuffer, color ):
         normal = calculate_normal(polygons, point)[:]
         #print normal
         if normal[2] > 0:
+
+            scanline_convert(polygons, point, screen, zbuffer )
+
+            '''
             draw_line( int(polygons[point][0]),
                        int(polygons[point][1]),
                        polygons[point][2],
@@ -42,6 +137,7 @@ def draw_polygons( polygons, screen, zbuffer, color ):
                        int(polygons[point+2][1]),
                        polygons[point+2][2],
                        screen, zbuffer, color)
+            '''
         point+= 3
 
 
