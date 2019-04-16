@@ -65,7 +65,7 @@ def scanline_convert(polygons, i, screen, zbuffer ):
             z_tobott -= dz_tobott
 
             y += dy
-
+            
     if bottom[1] != middle[1] and top[1] != bottom[1]:
         #print("top:{}\nmiddle:{}\nbottom:{}\n\n".format(top, middle, bottom))
         
@@ -84,6 +84,7 @@ def scanline_convert(polygons, i, screen, zbuffer ):
         z_totop = bottom[2]
         
         y = bottom[1]
+        
         while y <= middle[1]:
             draw_line(int(x_tomid), int(y), int(z_tomid), int(x_totop), int(y), int(z_totop), screen, zbuffer, color)
             #print("drew line")
